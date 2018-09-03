@@ -57,6 +57,9 @@ TF_DEFINE_PRIVATE_TOKENS(_tokens, (HdStreamRendererPlugin));
 
 TF_INSTANTIATE_SINGLETON(HdMayaRenderOverride);
 
+using MHWRender::MFrameContext;
+using MHWRender::MClearOperation;
+
 namespace {
 
 constexpr auto HDMAYA_DEFAULT_RENDERER_PLUGIN_NAME =
