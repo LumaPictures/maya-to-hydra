@@ -47,7 +47,7 @@ set(HDVIEW_SRC
     plugin/usdPreviewSurface.cpp
     plugin/viewCommand.cpp)
 
-add_library(hdmaya SHARED ${HDMAYA_SRC})
+add_library(hdmaya ${HDMAYA_SRC})
 target_link_libraries(hdmaya PUBLIC ${OPENGL_gl_LIBRARY} ${MAYA_LIBS})
 target_link_libraries(hdmaya PUBLIC ${Boost_LIBRARIES} ${GLEW_LIBRARY})
 target_link_libraries(hdmaya PUBLIC arch gf plug tf vt)
@@ -65,6 +65,9 @@ target_include_directories(hdmaya SYSTEM PUBLIC ${TBB_INCLUDE_DIRS})
 target_compile_features(hdmaya PUBLIC cxx_std_11)
 target_compile_definitions(hdmaya PRIVATE "HDMAYA_EXPORT=1")
 set_target_properties(hdmaya PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+if (NOT BUILD_SHARED_LIBS)
+    target_compile_definitions(hdmaya PUBLIC "HDMAYA_STATIC=1")
+endif()
 
 add_library(hdview SHARED ${HDVIEW_SRC})
 target_link_libraries(hdview PRIVATE hdmaya)
