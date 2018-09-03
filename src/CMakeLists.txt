@@ -74,6 +74,7 @@ target_link_libraries(hdview PRIVATE hdmaya)
 set_target_properties(hdview PROPERTIES PREFIX "")
 set_target_properties(hdview PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 set_target_properties(hdview PROPERTIES INSTALL_RPATH "$ORIGIN/../lib")
+MAYA_SET_PLUGIN_PROPERTIES(hdview)
 
 # M3dView needs this (technically, MNativeWindowHdl.h)
 # private atm because M3dView is only used in .cpp right now
