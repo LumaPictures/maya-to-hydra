@@ -257,10 +257,12 @@ void HdMayaLightAdapter::_CalculateShadowParams(
             : std::min(
                   GetDelegate()->GetParams().maximumShadowMapResolution,
                   dmapResolutionPlug.asInt());
+
+    const GfMatrix4d worldToLight = GetGfMatrixFromMaya(light.dagPath().inclusiveMatrixInverse());
     params.shadowMatrix =
         boost::static_pointer_cast<HdxShadowMatrixComputation>(
             boost::make_shared<HdMayaConstantShadowMatrix>(
-                frustum.ComputeProjectionMatrix()));
+                worldToLight * frustum.ComputeProjectionMatrix()));
     params.bias = dmapBiasPlug.isNull() ? -0.001 : -dmapBiasPlug.asFloat();
     params.blur = dmapFilterSizePlug.isNull()
                       ? 0.0
