@@ -43,23 +43,25 @@ TF_REGISTRY_FUNCTION(TfType) {
 namespace {
 
 void _TransformNodeDirty(MObject& node, MPlug& plug, void* clientData) {
-    auto* adapter = reinterpret_cast<HdMayaDagAdapter*>(clientData);
+    auto* data = reinterpret_cast<HdMayaDagAdapter::CallbackData*>(clientData);
     TF_DEBUG(HDMAYA_ADAPTER_DAG_PLUG_DIRTY)
         .Msg(
             "Dag adapter marking prim (%s) dirty because %s plug was "
             "dirtied.\n",
-            adapter->GetID().GetText(), plug.partialName().asChar());
+            data->adapter->GetID().GetText(), plug.partialName().asChar());
     if (plug == MayaAttrs::dagNode::visibility) {
-        if (adapter->UpdateVisibility()) {
+        if (data->adapter->UpdateVisibility()) {
             // Transform can change while dag path is hidden.
-            adapter->MarkDirty(
+            data->adapter->MarkDirty(
                 HdChangeTracker::DirtyVisibility |
                 HdChangeTracker::DirtyTransform);
-            adapter->InvalidateTransform();
+            data->adapter->InvalidateTransform();
         }
-    } else if (adapter->IsVisible()) {
-        adapter->MarkDirty(HdChangeTracker::DirtyTransform);
-        adapter->InvalidateTransform();
+    } else if (data->adapter->IsVisible()) {
+        data->adapter->MarkDirty(HdChangeTracker::DirtyTransform);
+        data->adapter->InvalidateTransform();
+        data->valid = false;
+        data->matrix.SetIdentity();
     }
 }
 
@@ -81,7 +83,23 @@ HdMayaDagAdapter::HdMayaDagAdapter(
 
 void HdMayaDagAdapter::_CalculateTransform() {
     if (_invalidTransform) {
-        _transform = GetGfMatrixFromMaya(_dagPath.inclusiveMatrix());
+        if (_callbackData.empty()) {
+            _transform = GetGfMatrixFromMaya(_dagPath.inclusiveMatrix());
+        } else {
+            _transform.SetIdentity();
+            for (auto& data: _callbackData) {
+                if (!data.valid) {
+                    MStatus status;
+                    MFnDagNode transform(data.path, &status);
+                    if (status) {
+                        data.matrix = GetGfMatrixFromMaya(
+                            transform.transformationMatrix());
+                    }
+                    data.valid = true;
+                }
+                _transform *= data.matrix;
+            }
+        }
         _invalidTransform = false;
     }
 };
@@ -99,16 +117,28 @@ void HdMayaDagAdapter::CreateCallbacks() {
     MStatus status;
     auto dag = GetDagPath();
     if (dag.node() != dag.transform()) { dag.pop(); }
-    for (; dag.length() > 0; dag.pop()) {
+    HdMayaAdapter::CreateCallbacks();
+    const auto length = dag.length();
+    if (length == 0) {
+        _callbackData.clear();
+        return;
+    }
+    _callbackData.resize(dag.length());
+    for (auto i = decltype(length){0}; i < length; ++i, dag.pop()) {
         MObject obj = dag.node();
         if (obj != MObject::kNullObj) {
+            auto& data = _callbackData[i];
+            data.adapter = this;
+            data.path = dag;
+            data.matrix.SetIdentity();
+            data.valid = false;
             auto id = MNodeMessage::addNodeDirtyPlugCallback(
-                obj, _TransformNodeDirty, this, &status);
+                obj, _TransformNodeDirty, _callbackData.data() + i, &status);
             if (status) { AddCallback(id); }
             _AddHierarchyChangedCallback(dag);
         }
     }
-    HdMayaAdapter::CreateCallbacks();
+
 }
 
 void HdMayaDagAdapter::MarkDirty(HdDirtyBits dirtyBits) {
@@ -139,6 +169,11 @@ void HdMayaDagAdapter::_AddHierarchyChangedCallback(MDagPath& dag) {
     auto id = MDagMessage::addParentAddedDagPathCallback(
         dag, _HierarchyChanged, this, &status);
     if (status) { AddCallback(id); }
+}
+
+void HdMayaDagAdapter::RemoveCallbacks() {
+    _callbackData.clear();
+    HdMayaAdapter::RemoveCallbacks();
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE

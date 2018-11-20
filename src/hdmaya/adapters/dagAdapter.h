@@ -79,6 +79,15 @@ public:
     const MDagPath& GetDagPath() { return _dagPath; }
     const bool IsVisible() { return _isVisible; }
     void InvalidateTransform() { _invalidTransform = true; }
+    HDMAYA_API
+    void RemoveCallbacks() override;
+
+    struct CallbackData {
+        GfMatrix4d matrix;
+        MDagPath path;
+        HdMayaDagAdapter* adapter;
+        bool valid;
+    };
 
 protected:
     HDMAYA_API
@@ -91,6 +100,8 @@ private:
     GfMatrix4d _transform;
     bool _isVisible = true;
     bool _invalidTransform = true;
+
+    std::vector<CallbackData> _callbackData;
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE
