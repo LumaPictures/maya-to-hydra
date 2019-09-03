@@ -85,8 +85,8 @@ MObject GetConnectedFileNode(
 
 /// \brief Returns the texture file path from a "file" shader node.
 /// \param fileNode "file" shader node.
-/// \return Full path to the texture pointed used by the file node. `<UDIM>` tags
-///  are kept intact.
+/// \return Full path to the texture pointed used by the file node. `<UDIM>`
+///  tags are kept intact.
 HDMAYA_API
 TfToken GetFileTexturePath(const MFnDependencyNode& fileNode);
 
