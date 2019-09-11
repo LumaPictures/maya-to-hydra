@@ -39,7 +39,9 @@ set(SRC
     delegates/delegateDebugCodes.cpp
     delegates/delegateRegistry.cpp
     delegates/sceneDelegate.cpp
-    delegates/testDelegate.cpp)
+    delegates/testDelegate.cpp
+
+    utils.cpp)
 
 add_library(hdmaya SHARED ${SRC})
 
