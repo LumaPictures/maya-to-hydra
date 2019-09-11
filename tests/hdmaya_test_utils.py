@@ -3,7 +3,7 @@ import maya.cmds as cmds
 import math
 import os.path
 import unittest
-from __builtin__ import None
+# from __builtin__ import None
 
 HD_STORM = "HdStormRendererPlugin"
 
