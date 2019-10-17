@@ -23,6 +23,8 @@
 //
 #include <pxr/pxr.h>
 
+#include <hdmaya/hdmaya.h>
+
 #include <pxr/base/tf/type.h>
 #include <pxr/imaging/hd/light.h>
 
@@ -34,6 +36,7 @@
 #include <hdmaya/adapters/lightAdapter.h>
 #include <hdmaya/adapters/mayaAttrs.h>
 #include <hdmaya/adapters/tokens.h>
+#include <hdmaya/utils.h>
 
 #include <maya/MPlugArray.h>
 
@@ -101,7 +104,19 @@ public:
                     .asChar()));
         } else if (paramName == HdLightTokens->enableColorTemperature) {
             return VtValue(false);
+#ifdef HDMAYA_USD_001910_BUILD
+        } else if (paramName == HdLightTokens->textureResource) {
+            auto fileObj =
+                GetConnectedFileNode(GetNode(), HdMayaAdapterTokens->color);
+            // TODO: Return a default, white texture?
+            // Ideally we would want to return a custom texture resource based
+            // on the color, but not sure how easy that would be.
+            if (fileObj == MObject::kNullObj) { return {}; }
+            return VtValue{GetFileTextureResource(
+                fileObj, GetFileTexturePath(MFnDependencyNode(fileObj)),
+                GetDelegate()->GetParams().textureMemoryPerTexture)};
         }
+#endif // HDMAYA_USD_001910_BUILD
         return {};
     }
 };

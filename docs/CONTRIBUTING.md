@@ -69,9 +69,9 @@ delegate.hpp // not ok
 
 ## Includes
 
-Include guards are preferred over #pragma once, because we follow USD's method of copying headers during build. Include guards should be named `__HDMAYA_CAMEL_CASE_H__` or `__MTOH_CAMEL_CASE_H__`, where camel case represents each word in the header file's name.
+Include guards are preferred, because we follow USD's method of copying headers during build. Include guards should be named `__HDMAYA_CAMEL_CASE_H__` or `__MTOH_CAMEL_CASE_H__`, where camel case represents each word in the header file's name.
 
-Prefer using `#include "fileName.h"` for relative, same directory, includes and `#include <pxr/usd/usd/stage.h>` for includes coming from outside the current directory. Note, headers from delegates and adapters are outside the current directory, due to the header copying.
+Prefer using `"fileName.h"` for relative, same directory, includes and `<fileName.h>` for includes coming from outside the current directory. Note, headers from delegates and adapters are outside the current directory, due to the header copying.
 
 ## Coding style
 

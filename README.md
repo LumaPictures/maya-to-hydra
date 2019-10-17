@@ -33,7 +33,7 @@ Requirements:
 | Package | Version |
 | --- | --- |
 | GCC | 4.8.5/6.3.1 |
-| USD | 0.18.11/0.19.01/0.19.03/0.19.05 |
+| USD | 0.18.11/0.19.01/0.19.03/0.19.05/0.19.07/0.19.10 |
 | Maya | 2018/2019 |
 | Boost | 1.61 |
 | TBB | 4.4+ |
@@ -53,6 +53,8 @@ Lights:
 - areaLight
 - pointLight
 - spotLight
+- directionalLight
+- aiSkydomeLight
 
 Shaders:
 - UsdPreviewSurface
